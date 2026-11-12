@@ -11,7 +11,10 @@ type OperationMentor = {
   active: boolean;
   /** 멘토 상세(예약) 페이지 주소 */
   url: string | null;
+  /** 현재 재직 기업명 */
   company: string | null;
+  /** 실제 사용할 기업명 (고객에게 보여 줄 이름). 비어 있으면 company 를 쓴다. */
+  displayCompany?: string | null;
   jobRole: string | null;
   desiredJobRoles: string | null;
   programs: string[];
@@ -52,18 +55,21 @@ function toProfile(m: OperationMentor): MentorProfile {
     .filter(Boolean);
   const tags = m.programs.filter((p) => !HIDDEN_PROGRAMS.has(p));
   const anyJob = desiredJobRoles.includes(ANY_JOB);
+  // 고객에게는 '실제 사용할 기업명'을 보여 주고, 비어 있을 때만 현재 재직 기업명을 쓴다.
+  const company = m.displayCompany?.trim() || m.company?.trim() || null;
   const jobs = [...new Set([...desiredJobRoles.filter((r) => r !== ANY_JOB), ...tags.filter((t) => JOB_TAGS.includes(t))])];
   if (jobs.length === 0 && !anyJob && m.jobRole?.trim()) jobs.push(m.jobRole.trim());
   return {
     activityName: m.activityName?.trim() || null,
     url: /^https?:\/\//i.test(m.url?.trim() ?? "") ? m.url!.trim() : null,
-    company: m.company,
+    company,
     jobRole: m.jobRole,
     desiredJobRoles,
     jobs,
     jobFilters: toJobFilters(jobs),
     anyJob,
-    companySize: (m.company && COMPANY_SIZE[m.company.trim()]) || null,
+    companySize:
+      (company && COMPANY_SIZE[company]) || (m.company?.trim() && COMPANY_SIZE[m.company.trim()]) || null,
     programs: [
       ...new Set(
         tags
@@ -96,7 +102,7 @@ async function load(): Promise<Record<string, MentorProfile>> {
   return byRealName;
 }
 
-const loadCached = unstable_cache(load, ["mentor-profiles-v5"], { revalidate: 300 });
+const loadCached = unstable_cache(load, ["mentor-profiles-v6"], { revalidate: 300 });
 
 /** 본명 → 프로필. 멘토 DB 를 못 읽어도 페이지는 프로필 없이 뜬다. */
 export async function fetchMentorProfiles(): Promise<Record<string, MentorProfile>> {

@@ -28,7 +28,7 @@ export const HIDDEN_MENTORS = ["팀장 박주삼"];
 
 /**
  * 회사명 → 기업 규모. '기업 규모' 필터에 쓰입니다.
- * 키는 멘토 DB의 회사(company) 값과 정확히 같아야 하며, 표에 없는 회사의 멘토는 규모 필터에서 빠집니다.
+ * 키는 멘토 DB의 '실제 사용할 기업명'(없으면 회사) 값과 정확히 같아야 하며, 표에 없는 회사의 멘토는 규모 필터에서 빠집니다.
  */
 export const COMPANY_SIZE: Record<string, string> = {
   쿠팡: "대기업",
