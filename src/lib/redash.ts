@@ -64,16 +64,14 @@ async function executeWithMaxAge(id: string, maxAge: number): Promise<RedashResu
   );
   if ("query_result" in started) return started;
 
+  // 쿼리 전용 API 키는 /api/jobs 를 볼 권한이 없다(404). 대신 쿼리의 최신 결과가
+  // 이번 실행 이후 것으로 바뀌었는지 확인한다. 실행이 끝나면 Redash 가 최신 결과를 갈아 끼운다.
   const deadline = Date.now() + 30_000;
+  const freshAfter = Date.now() - maxAge * 1000;
   while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 1000));
-    const { job } = await redash<{
-      job: { status: number; query_result_id: number | null; error?: string };
-    }>(`/api/jobs/${started.job.id}`);
-    if (job.status === 3 && job.query_result_id) {
-      return redash<RedashResult>(`/api/query_results/${job.query_result_id}.json`);
-    }
-    if (job.status === 4 || job.status === 5) throw new Error(job.error || "쿼리 실행 실패");
+    await new Promise((r) => setTimeout(r, 1500));
+    const latest = await redash<RedashResult>(`/api/queries/${id}/results.json`);
+    if (new Date(latest.query_result.retrieved_at).getTime() >= freshAfter) return latest;
   }
   throw new Error("쿼리 실행 시간 초과");
 }

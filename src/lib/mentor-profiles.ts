@@ -1,5 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
+import { ANY_JOB, COMPANY_SIZE, JOB_TAGS, MENTORING_TYPES, SIZE_TAGS } from "@/config/mentors";
+import { toJobFilters } from "./jobs";
 
 /** lets-operation 멘토 DB(/api/external/mentors) 응답 한 건. */
 type OperationMentor = {
@@ -7,6 +9,8 @@ type OperationMentor = {
   realName: string;
   activityName: string | null;
   active: boolean;
+  /** 멘토 상세(예약) 페이지 주소 */
+  url: string | null;
   company: string | null;
   jobRole: string | null;
   desiredJobRoles: string | null;
@@ -18,9 +22,19 @@ type OperationMentor = {
 /** 고객에게 보여도 되는 멘토 프로필. 본명·메모·SNS 등은 담지 않는다. */
 export type MentorProfile = {
   activityName: string | null;
+  /** 멘토 DB 의 예약 페이지 주소 (http/https 만). */
+  url: string | null;
   company: string | null;
   jobRole: string | null;
   desiredJobRoles: string[];
+  /** 카드에 보이는 멘토링 직무. 멘토링 직무(직무무관 제외) + 직무 태그, 둘 다 없으면 현재 직무. */
+  jobs: string[];
+  /** 직무 필터 선택지 이름으로 바꾼 값 (JOB_GROUPS 기준). */
+  jobFilters: string[];
+  /** 멘토링 직무가 '직무무관' — 어떤 직무 필터에도 나온다. */
+  anyJob: boolean;
+  companySize: string | null;
+  /** 멘토링 유형. MENTORING_TYPES 에 걸리는 태그는 그 유형 이름으로 바꾸고, 직무·규모 태그는 뺀다. */
   programs: string[];
   careers: string[];
   documentPasses: string[];
@@ -32,15 +46,31 @@ const HIDDEN_PROGRAMS = new Set(["세미나", "VOD", "전체"]);
 const join = (...parts: (string | null)[]) => parts.filter(Boolean).join(" · ");
 
 function toProfile(m: OperationMentor): MentorProfile {
+  const desiredJobRoles = (m.desiredJobRoles ?? "")
+    .split(/[,/·\n]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const tags = m.programs.filter((p) => !HIDDEN_PROGRAMS.has(p));
+  const anyJob = desiredJobRoles.includes(ANY_JOB);
+  const jobs = [...new Set([...desiredJobRoles.filter((r) => r !== ANY_JOB), ...tags.filter((t) => JOB_TAGS.includes(t))])];
+  if (jobs.length === 0 && !anyJob && m.jobRole?.trim()) jobs.push(m.jobRole.trim());
   return {
     activityName: m.activityName?.trim() || null,
+    url: /^https?:\/\//i.test(m.url?.trim() ?? "") ? m.url!.trim() : null,
     company: m.company,
     jobRole: m.jobRole,
-    desiredJobRoles: (m.desiredJobRoles ?? "")
-      .split(/[,/·\n]+/)
-      .map((s) => s.trim())
-      .filter(Boolean),
-    programs: m.programs.filter((p) => !HIDDEN_PROGRAMS.has(p)),
+    desiredJobRoles,
+    jobs,
+    jobFilters: toJobFilters(jobs),
+    anyJob,
+    companySize: (m.company && COMPANY_SIZE[m.company.trim()]) || null,
+    programs: [
+      ...new Set(
+        tags
+          .filter((t) => !JOB_TAGS.includes(t) && !SIZE_TAGS.includes(t))
+          .map((t) => MENTORING_TYPES.find((m) => (m.tags ?? [m.label]).includes(t))?.label ?? t),
+      ),
+    ],
     careers: m.careers.map((c) => join(c.company, c.jobRole, c.jobTitle, c.years)).filter(Boolean),
     documentPasses: m.documentPasses.map((p) => join(p.company, p.jobRole)).filter(Boolean),
   };
@@ -66,7 +96,7 @@ async function load(): Promise<Record<string, MentorProfile>> {
   return byRealName;
 }
 
-const loadCached = unstable_cache(load, ["mentor-profiles"], { revalidate: 300 });
+const loadCached = unstable_cache(load, ["mentor-profiles-v5"], { revalidate: 300 });
 
 /** 본명 → 프로필. 멘토 DB 를 못 읽어도 페이지는 프로필 없이 뜬다. */
 export async function fetchMentorProfiles(): Promise<Record<string, MentorProfile>> {
