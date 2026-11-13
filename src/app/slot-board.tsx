@@ -165,14 +165,20 @@ export default function SlotBoard({ data }: { data: PublicData }) {
       ) : (
         <>
           <div className="toolbar">
-            <input
-              type="search"
-              className="search"
-              placeholder="직무나 기업으로 찾기 (예: 마케팅, 삼성)"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="직무나 기업으로 멘토 찾기"
-            />
+            <div className="search-wrap">
+              <svg className="search-icon" aria-hidden viewBox="0 0 20 20" width="18" height="18">
+                <circle cx="8.5" cy="8.5" r="5.75" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                <path d="M13 13l4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+              <input
+                type="search"
+                className="search"
+                placeholder="직무나 기업으로 찾기 (예: 마케팅, 삼성)"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="직무나 기업으로 멘토 찾기"
+              />
+            </div>
             <div className="toolbar-row">
               <div className="filters" role="group" aria-label="멘토 거르기">
                 <FilterSelect
