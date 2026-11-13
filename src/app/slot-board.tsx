@@ -371,11 +371,7 @@ function MentorCard({
         </div>
         <div className="times-wrap">
           <span className="times-date">{shortDay(activeDate)}</span>
-          <ul className="times">
-            {times.map((s) => (
-              <li key={s.start}>{s.start}</li>
-            ))}
-          </ul>
+          <TimeList slots={times} url={mentor.bookingUrl} />
         </div>
       </div>
     </article>
@@ -500,16 +496,31 @@ function CalendarGrid({
             </p>
             <BookingButton url={pickedMentor.bookingUrl} />
           </div>
-          <ul className="times">
-            {pickedSlots.map((s) => (
-              <li key={s.start}>{s.start}</li>
-            ))}
-          </ul>
+          <TimeList slots={pickedSlots} url={pickedMentor.bookingUrl} />
         </div>
       ) : (
         <p className="gc-hint">숫자는 그날 예약 가능한 시간 수예요. 칸을 누르면 시간을 볼 수 있어요.</p>
       )}
     </section>
+  );
+}
+
+/** 예약 가능 시간 목록. 예약 주소가 있으면 각 시간이 '예약하러 가기'와 같은 주소로 이동한다. */
+function TimeList({ slots, url }: { slots: PublicSlot[]; url: string | null }) {
+  return (
+    <ul className="times">
+      {slots.map((s) => (
+        <li key={s.start}>
+          {url ? (
+            <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${s.start} 예약하러 가기`}>
+              {s.start}
+            </a>
+          ) : (
+            <span>{s.start}</span>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
 
