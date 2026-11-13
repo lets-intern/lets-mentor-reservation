@@ -338,32 +338,36 @@ function MentorCard({
         <p className="avail-label">
           예약 가능한 날짜 <span>총 {slots.length}개 시간</span>
         </p>
-        <div
-          className="day-row"
-          role="radiogroup"
-          aria-label={`${mentor.nickname} 예약 가능한 날짜`}
-        >
-          {dates.map((d) => {
-            const i = dayInfo(d);
-            const n = counts.get(d) ?? 0;
-            return (
-              <button
-                key={d}
-                role="radio"
-                aria-checked={d === activeDate}
-                disabled={n === 0}
-                className={`day ${i.sun ? "sun" : i.sat ? "sat" : ""}`}
-                onClick={() => setOpenDate(d)}
-                aria-label={`${i.m}월 ${i.day}일 ${i.wd}요일, ${n ? `${n}개 시간` : "예약 불가"}`}
-              >
-                <span className="day-d">
-                  {i.m}/{i.day}
-                </span>
-                <span className="day-w">{i.wd}</span>
-                <span className="day-n">{n || "–"}</span>
-              </button>
-            );
-          })}
+        {/* 스크롤은 바깥 블록 상자가, 가로 배치는 안쪽 flex 가 맡는다.
+            Safari 는 스크롤되는 flex 상자의 높이에서 스크롤바 높이를 빼먹어 버튼 아래가 잘린다. */}
+        <div className="day-scroll">
+          <div
+            className="day-row"
+            role="radiogroup"
+            aria-label={`${mentor.nickname} 예약 가능한 날짜`}
+          >
+            {dates.map((d) => {
+              const i = dayInfo(d);
+              const n = counts.get(d) ?? 0;
+              return (
+                <button
+                  key={d}
+                  role="radio"
+                  aria-checked={d === activeDate}
+                  disabled={n === 0}
+                  className={`day ${i.sun ? "sun" : i.sat ? "sat" : ""}`}
+                  onClick={() => setOpenDate(d)}
+                  aria-label={`${i.m}월 ${i.day}일 ${i.wd}요일, ${n ? `${n}개 시간` : "예약 불가"}`}
+                >
+                  <span className="day-d">
+                    {i.m}/{i.day}
+                  </span>
+                  <span className="day-w">{i.wd}</span>
+                  <span className="day-n">{n || "–"}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="times-wrap">
           <span className="times-date">{shortDay(activeDate)}</span>
