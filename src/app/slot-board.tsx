@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  BOOKING_CUTOFF_HOURS,
   BOTTOM_MENTORS,
   COMPANY_SIZE_ORDER,
   MENTORING_TYPES,
@@ -25,13 +26,14 @@ const withTitle = (name: string) =>
   name.endsWith("멘토") ? name : `${name} 멘토`;
 
 export default function SlotBoard({ data }: { data: PublicData }) {
-  // 서버 캐시 사이에 지나간 시간은 브라우저에서 한 번 더 걸러낸다.
+  // 서버 캐시 사이에 예약 마감(시작 BOOKING_CUTOFF_HOURS 전)이 지난 시간은 브라우저에서 한 번 더 걸러낸다.
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => setNow(new Date()), []);
-  const slots = useMemo(
-    () => (now ? data.slots.filter((s) => startsAt(s) > now) : data.slots),
-    [data.slots, now],
-  );
+  const slots = useMemo(() => {
+    if (!now) return data.slots;
+    const cutoff = now.getTime() + BOOKING_CUTOFF_HOURS * 3600_000;
+    return data.slots.filter((s) => startsAt(s).getTime() >= cutoff);
+  }, [data.slots, now]);
 
   const byMentor = useMemo(() => {
     const m = new Map<string, PublicSlot[]>();
@@ -252,8 +254,8 @@ export default function SlotBoard({ data }: { data: PublicData }) {
 
       <footer className="foot">
         <p>
-          {updated} 기준이에요. 예약 상황에 따라 실제 예약 가능 여부는 달라질 수
-          있어요.
+          {updated} 기준이에요. 예약은 멘토링 시작 {BOOKING_CUTOFF_HOURS}시간 전까지 할 수 있어요.
+          예약 상황에 따라 실제 예약 가능 여부는 달라질 수 있어요.
         </p>
       </footer>
     </main>
