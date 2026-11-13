@@ -76,8 +76,10 @@ h1 { margin: 0; font-size: 32px; max-width: 560px; line-height: 1.3; font-weight
 
 /* calendar grid — 멘토 카드(.mcard)와 날짜 버튼(.day)의 모양을 그대로 따른다 */
 .grid-cal { gap: 16px; }
-.grid-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; scrollbar-width: thin; scrollbar-color: #d5d9e0 transparent; }
-.grid-cal table { border-collapse: separate; border-spacing: 4px 6px; margin: -6px -4px; font-variant-numeric: tabular-nums; }
+/* 표의 칸 간격(border-spacing)을 상쇄하는 음수 여백은 스크롤 상자 바깥에 둔다.
+   표에 두면 상자 밖으로 삐져나와 세로 스크롤바가 생긴다. */
+.grid-scroll { margin: -6px -4px 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; scrollbar-width: thin; scrollbar-color: #d5d9e0 transparent; }
+.grid-cal table { border-collapse: separate; border-spacing: 4px 6px; font-variant-numeric: tabular-nums; }
 .grid-cal th, .grid-cal td { padding: 0; font-weight: inherit; }
 .gc-corner, .gc-mentor {
   position: sticky; left: 0; z-index: 2; background: #fff; text-align: left;
