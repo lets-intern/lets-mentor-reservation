@@ -2,12 +2,14 @@ import { JOB_GROUPS } from "@/config/mentors";
 
 const norm = (s: string) => s.replace(/\s+/g, "").toLowerCase();
 
-const byJob = new Map<string, string>();
+// 한 별칭이 여러 직무에 걸릴 수 있다 (예: 풀스택 → 프론트엔드·백엔드).
+const byJob = new Map<string, string[]>();
 const byGroup = new Map<string, string[]>();
 for (const g of JOB_GROUPS) {
   const labels = g.jobs.map((j) => j.label);
   for (const a of [g.group, ...(g.aliases ?? [])]) byGroup.set(norm(a), labels);
-  for (const j of g.jobs) for (const a of [j.label, ...(j.aliases ?? [])]) byJob.set(norm(a), j.label);
+  for (const j of g.jobs)
+    for (const a of [j.label, ...(j.aliases ?? [])]) byJob.set(norm(a), [...(byJob.get(norm(a)) ?? []), j.label]);
 }
 
 /** 멘토 DB 직무 값들 → 직무 필터 선택지 이름. 직무 이름이 먼저, 분류 이름이면 그 분류 전체, 둘 다 아니면 원래 값. */
@@ -15,8 +17,8 @@ export function toJobFilters(values: string[]): string[] {
   const out = new Set<string>();
   for (const v of values) {
     const k = norm(v);
-    const job = byJob.get(k);
-    if (job) out.add(job);
+    const jobs = byJob.get(k);
+    if (jobs) jobs.forEach((j) => out.add(j));
     else if (byGroup.has(k)) byGroup.get(k)!.forEach((l) => out.add(l));
     else out.add(v);
   }
