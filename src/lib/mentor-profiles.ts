@@ -22,7 +22,7 @@ type OperationMentor = {
   documentPasses: { company: string | null; jobRole: string | null }[];
 };
 
-/** 고객에게 보여도 되는 멘토 프로필. 본명·메모·SNS 등은 담지 않는다. */
+/** 고객에게 보여도 되는 멘토 프로필. 본명·메모·SNS·경력 등은 담지 않는다. */
 export type MentorProfile = {
   activityName: string | null;
   /** 멘토 DB 의 예약 페이지 주소 (http/https 만). */
@@ -39,14 +39,11 @@ export type MentorProfile = {
   companySize: string | null;
   /** 멘토링 유형. MENTORING_TYPES 에 걸리는 태그는 그 유형 이름으로 바꾸고, 직무·규모 태그는 뺀다. */
   programs: string[];
-  careers: string[];
   documentPasses: string[];
 };
 
 // 고객이 신청하는 1:1 멘토링과 관계없는 운영용 분류는 뺀다.
 const HIDDEN_PROGRAMS = new Set(["세미나", "VOD", "전체"]);
-
-const join = (...parts: (string | null)[]) => parts.filter(Boolean).join(" · ");
 
 function toProfile(m: OperationMentor): MentorProfile {
   const desiredJobRoles = (m.desiredJobRoles ?? "")
@@ -77,8 +74,8 @@ function toProfile(m: OperationMentor): MentorProfile {
           .map((t) => MENTORING_TYPES.find((m) => (m.tags ?? [m.label]).includes(t))?.label ?? t),
       ),
     ],
-    careers: m.careers.map((c) => join(c.company, c.jobRole, c.jobTitle, c.years)).filter(Boolean),
-    documentPasses: m.documentPasses.map((p) => join(p.company, p.jobRole)).filter(Boolean),
+    // 서류 합격은 회사만 보여 준다 (직무는 빼고, 같은 회사는 한 번만).
+    documentPasses: [...new Set(m.documentPasses.map((p) => p.company?.trim()).filter((c): c is string => !!c))],
   };
 }
 
@@ -102,7 +99,7 @@ async function load(): Promise<Record<string, MentorProfile>> {
   return byRealName;
 }
 
-const loadCached = unstable_cache(load, ["mentor-profiles-v6"], { revalidate: 300 });
+const loadCached = unstable_cache(load, ["mentor-profiles-v9"], { revalidate: 300 });
 
 /** 본명 → 프로필. 멘토 DB 를 못 읽어도 페이지는 프로필 없이 뜬다. */
 export async function fetchMentorProfiles(): Promise<Record<string, MentorProfile>> {

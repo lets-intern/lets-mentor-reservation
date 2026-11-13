@@ -110,7 +110,6 @@ export default function SlotBoard({ data }: { data: PublicData }) {
           p?.companySize,
           ...(p?.jobs ?? []),
           ...(p?.desiredJobRoles ?? []),
-          ...(p?.careers ?? []),
           ...(p?.documentPasses ?? []),
         ];
         return hay.some((v) => v?.toLowerCase().includes(q));
@@ -322,11 +321,6 @@ function MentorCard({
           {p.documentPasses.length > 0 && (
             <Row label="서류 합격">
               <Clamp items={p.documentPasses} max={4} />
-            </Row>
-          )}
-          {p.careers.length > 0 && (
-            <Row label="경력">
-              <Clamp items={p.careers} max={2} />
             </Row>
           )}
         </dl>

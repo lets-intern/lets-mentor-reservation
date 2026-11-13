@@ -101,7 +101,7 @@ export const JOB_GROUPS: { group: string; aliases?: string[]; jobs: { label: str
   },
   {
     group: "영업",
-    jobs: [{ label: "영업" }, { label: "해외영업" }, { label: "컨설팅", aliases: ["컨설턴트"] }],
+    jobs: [{ label: "영업", aliases: ["영업마케팅", "영업관리"] }, { label: "해외영업" }, { label: "컨설팅", aliases: ["컨설턴트"] }],
   },
   {
     group: "디자인",
