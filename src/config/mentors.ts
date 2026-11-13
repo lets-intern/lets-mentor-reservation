@@ -28,7 +28,8 @@ export const HIDDEN_MENTORS = ["팀장 박주삼"];
 
 /**
  * 회사명 → 기업 규모. '기업 규모' 필터에 쓰입니다.
- * 키는 멘토 DB의 '실제 사용할 기업명'(없으면 회사) 값과 정확히 같아야 하며, 표에 없는 회사의 멘토는 규모 필터에서 빠집니다.
+ * 멘토 DB '프로그램'에 규모 태그(대기업 등)가 있으면 그게 먼저이고, 없을 때만 이 표를 씁니다.
+ * 키는 멘토 DB의 '실제 사용할 기업명'(없으면 회사) 값과 정확히 같아야 하며, 둘 다 없는 멘토는 규모 필터에서 빠집니다.
  */
 export const COMPANY_SIZE: Record<string, string> = {
   쿠팡: "대기업",
@@ -42,10 +43,10 @@ export const COMPANY_SIZE_ORDER = ["대기업", "중견기업", "중소기업", 
 /**
  * 멘토 DB '프로그램' 태그 정리.
  * - JOB_TAGS: 직무로 옮길 태그
- * - SIZE_TAGS: 기업 규모를 뜻하는 태그. 규모는 COMPANY_SIZE 로 정하므로 프로그램에서 뺍니다.
+ * - SIZE_TAGS: 기업 규모를 뜻하는 태그. 기업 규모로 쓰고 프로그램에서는 뺍니다.
  * 나머지 태그(자기소개서·포트폴리오·면접 등)는 프로그램으로 남습니다.
  */
-export const JOB_TAGS = ["마케팅"];
+export const JOB_TAGS = ["마케팅", "HR", "PM/서비스기획"];
 export const SIZE_TAGS = ["대기업", "중견기업", "중소기업", "외국계", "공기업", "스타트업"];
 /** 멘토 DB '멘토링 직무'에 이 값이 있으면 어떤 직무를 골라도 함께 보여 줍니다. */
 export const ANY_JOB = "직무무관";
@@ -73,8 +74,8 @@ export const JOB_GROUPS: { group: string; aliases?: string[]; jobs: { label: str
   {
     group: "기획",
     jobs: [
-      { label: "PM/PO", aliases: ["PM", "PO"] },
-      { label: "서비스 기획" },
+      { label: "PM/PO", aliases: ["PM", "PO", "PMPO", "Product Manager", "Project Manager", "PM/서비스기획"] },
+      { label: "서비스 기획", aliases: ["PM/서비스기획"] },
       { label: "사업개발/기획", aliases: ["사업개발", "사업기획", "BD"] },
       { label: "전략 기획", aliases: ["전략"] },
       { label: "상품 기획/MD", aliases: ["상품기획", "MD"] },
@@ -91,7 +92,7 @@ export const JOB_GROUPS: { group: string; aliases?: string[]; jobs: { label: str
   },
   {
     group: "마케팅",
-    aliases: ["마케터"],
+    aliases: ["마케터", "마케팅 전체"],
     jobs: [
       { label: "퍼포먼스 마케팅", aliases: ["퍼포먼스 마케터"] },
       { label: "콘텐츠 마케팅", aliases: ["콘텐츠 마케터", "컨텐츠 마케팅"] },
@@ -106,16 +107,18 @@ export const JOB_GROUPS: { group: string; aliases?: string[]; jobs: { label: str
   {
     group: "디자인",
     jobs: [
-      { label: "UIUX 디자인", aliases: ["UI/UX 디자인", "UX 디자인", "프로덕트 디자인"] },
+      { label: "UIUX 디자인", aliases: ["UI/UX 디자인", "UX/UI 디자인", "UXUI 디자인", "UX 디자인", "프로덕트 디자인"] },
       { label: "그래픽 디자인" },
       { label: "BI/BX 디자인", aliases: ["브랜드 디자인"] },
     ],
   },
   {
     group: "개발",
+    aliases: ["개발자", "IT직무"],
     jobs: [
-      { label: "프론트엔드 개발", aliases: ["프론트엔드"] },
-      { label: "백엔드/서버 개발", aliases: ["백엔드", "서버 개발", "백엔드 개발"] },
+      { label: "프론트엔드 개발", aliases: ["프론트엔드", "풀스택", "풀스택 개발"] },
+      { label: "백엔드/서버 개발", aliases: ["백엔드", "서버 개발", "백엔드 개발", "풀스택", "풀스택 개발"] },
+      { label: "AI/데이터 사이언스", aliases: ["AI 개발", "AI 개발자", "AI 데이터 사이언티스트", "데이터 사이언티스트"] },
       { label: "데이터 분석", aliases: ["데이터 분석가", "데이터"] },
       { label: "QA/테스트 엔지니어링", aliases: ["QA"] },
       { label: "게임 개발" },

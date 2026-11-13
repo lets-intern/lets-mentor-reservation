@@ -45,6 +45,9 @@ export type MentorProfile = {
 // 고객이 신청하는 1:1 멘토링과 관계없는 운영용 분류는 뺀다.
 const HIDDEN_PROGRAMS = new Set(["세미나", "VOD", "전체"]);
 
+// 태그 비교는 띄어쓰기 무시 (예: 경험정리 = 경험 정리).
+const nospace = (s: string) => s.replace(/\s+/g, "");
+
 function toProfile(m: OperationMentor): MentorProfile {
   const desiredJobRoles = (m.desiredJobRoles ?? "")
     .split(/[,/·\n]+/)
@@ -65,13 +68,17 @@ function toProfile(m: OperationMentor): MentorProfile {
     jobs,
     jobFilters: toJobFilters(jobs),
     anyJob,
+    // 멘토 DB '프로그램'의 규모 태그가 먼저, 없으면 COMPANY_SIZE 표.
     companySize:
-      (company && COMPANY_SIZE[company]) || (m.company?.trim() && COMPANY_SIZE[m.company.trim()]) || null,
+      tags.find((t) => SIZE_TAGS.includes(t)) ||
+      (company && COMPANY_SIZE[company]) ||
+      (m.company?.trim() && COMPANY_SIZE[m.company.trim()]) ||
+      null,
     programs: [
       ...new Set(
         tags
           .filter((t) => !JOB_TAGS.includes(t) && !SIZE_TAGS.includes(t))
-          .map((t) => MENTORING_TYPES.find((m) => (m.tags ?? [m.label]).includes(t))?.label ?? t),
+          .map((t) => MENTORING_TYPES.find((m) => (m.tags ?? [m.label]).some((x) => nospace(x) === nospace(t)))?.label ?? t),
       ),
     ],
     // 서류 합격은 회사만 보여 준다 (직무는 빼고, 같은 회사는 한 번만).
@@ -99,7 +106,7 @@ async function load(): Promise<Record<string, MentorProfile>> {
   return byRealName;
 }
 
-const loadCached = unstable_cache(load, ["mentor-profiles-v9"], { revalidate: 300 });
+const loadCached = unstable_cache(load, ["mentor-profiles-v10"], { revalidate: 300 });
 
 /** 본명 → 프로필. 멘토 DB 를 못 읽어도 페이지는 프로필 없이 뜬다. */
 export async function fetchMentorProfiles(): Promise<Record<string, MentorProfile>> {
