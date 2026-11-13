@@ -1,5 +1,5 @@
 import "server-only";
-import { BOOKING_URLS, HIDDEN_MENTORS } from "@/config/mentors";
+import { BOOKING_CUTOFF_HOURS, BOOKING_URLS, HIDDEN_MENTORS } from "@/config/mentors";
 import type { MentorProfile } from "./mentor-profiles";
 import type { SlotRow } from "./redash";
 
@@ -21,7 +21,9 @@ export function toPublic(
   profiles: Record<string, MentorProfile>,
   now = new Date(),
 ): PublicData {
-  const open = rows.filter((r) => r.예약구분 === "예약가능" && kst(r.슬롯시작) > now);
+  // 노출 정책: 시작까지 BOOKING_CUTOFF_HOURS 이상 남은 '예약가능' 슬롯만.
+  const cutoff = new Date(now.getTime() + BOOKING_CUTOFF_HOURS * 3600_000);
+  const open = rows.filter((r) => r.예약구분 === "예약가능" && kst(r.슬롯시작) >= cutoff);
 
   const ids = new Map<string, PublicMentor>();
   const hidden = new Set<string>();
