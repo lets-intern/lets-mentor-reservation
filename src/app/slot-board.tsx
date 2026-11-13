@@ -110,7 +110,6 @@ export default function SlotBoard({ data }: { data: PublicData }) {
           p?.companySize,
           ...(p?.jobs ?? []),
           ...(p?.desiredJobRoles ?? []),
-          ...(p?.careers ?? []),
           ...(p?.documentPasses ?? []),
         ];
         return hay.some((v) => v?.toLowerCase().includes(q));
@@ -144,7 +143,11 @@ export default function SlotBoard({ data }: { data: PublicData }) {
   return (
     <main className="page">
       <header className="hero">
-        <p className="eyebrow">LETS CAREER · 1:1 LIVE 멘토링</p>
+        <p className="eyebrow">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" width={20} height={17} className="brand-logo" />
+          LETS CAREER · 1:1 LIVE 멘토링
+        </p>
         <h1>나에게 맞는 멘토와 예약 가능한 시간을 한눈에</h1>
         <p className="lead">
           멘토마다 전문 직무와 멘토링 유형이 달라요. 프로필을 확인하고 원하는
@@ -318,11 +321,6 @@ function MentorCard({
           {p.documentPasses.length > 0 && (
             <Row label="서류 합격">
               <Clamp items={p.documentPasses} max={4} />
-            </Row>
-          )}
-          {p.careers.length > 0 && (
-            <Row label="경력">
-              <Clamp items={p.careers} max={2} />
             </Row>
           )}
         </dl>
